@@ -54,26 +54,38 @@ const MOCK_RESIDENTS: Resident[] = [
 
 
 export default function Home() {
-  const [deliveries, setDeliveries] = useState<Delivery[]>(() => {
-    if (typeof window === 'undefined') return [];
-    const storedDeliveries = localStorage.getItem('deliveries');
-    return storedDeliveries ? JSON.parse(storedDeliveries) : MOCK_DELIVERIES;
-  });
-  const [residents, setResidents] = useState<Resident[]>(() => {
-    if (typeof window === 'undefined') return [];
-    const storedResidents = localStorage.getItem('residents');
-    return storedResidents ? JSON.parse(storedResidents) : MOCK_RESIDENTS;
-  });
+  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
+  const [residents, setResidents] = useState<Resident[]>([]);
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [editingDelivery, setEditingDelivery] = useState<Delivery | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    localStorage.setItem('deliveries', JSON.stringify(deliveries));
+    const storedDeliveries = localStorage.getItem('deliveries');
+    if (storedDeliveries) {
+      setDeliveries(JSON.parse(storedDeliveries));
+    } else {
+      setDeliveries(MOCK_DELIVERIES);
+    }
+
+    const storedResidents = localStorage.getItem('residents');
+    if (storedResidents) {
+      setResidents(JSON.parse(storedResidents));
+    } else {
+      setResidents(MOCK_RESIDENTS);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (deliveries.length > 0) {
+      localStorage.setItem('deliveries', JSON.stringify(deliveries));
+    }
   }, [deliveries]);
 
   useEffect(() => {
-    localStorage.setItem('residents', JSON.stringify(residents));
+    if (residents.length > 0) {
+      localStorage.setItem('residents', JSON.stringify(residents));
+    }
   }, [residents]);
 
 

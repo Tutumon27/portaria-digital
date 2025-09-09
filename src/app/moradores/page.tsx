@@ -18,17 +18,24 @@ const MOCK_RESIDENTS: Resident[] = [
 ];
 
 export default function MoradoresPage() {
-  const [residents, setResidents] = useState<Resident[]>(() => {
-    if (typeof window === 'undefined') return [];
-    const storedResidents = localStorage.getItem('residents');
-    return storedResidents ? JSON.parse(storedResidents) : MOCK_RESIDENTS;
-  });
+  const [residents, setResidents] = useState<Resident[]>([]);
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [editingResident, setEditingResident] = useState<Resident | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    localStorage.setItem('residents', JSON.stringify(residents));
+    const storedResidents = localStorage.getItem('residents');
+    if (storedResidents) {
+      setResidents(JSON.parse(storedResidents));
+    } else {
+      setResidents(MOCK_RESIDENTS);
+    }
+  }, []);
+
+  useEffect(() => {
+    if(residents.length > 0){
+      localStorage.setItem('residents', JSON.stringify(residents));
+    }
   }, [residents]);
 
   const handleAddClick = () => {
