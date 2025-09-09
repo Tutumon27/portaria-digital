@@ -34,7 +34,7 @@
   }
 
   .dark {
-    --background: 0 0% 0%; /* Black */
+    --background: 222 84% 5%; /* Bluish Black */
     --foreground: 0 0% 83.1%; /* Light Gray */
 
     --card: 240 5% 12%; /* Dark Gray for Table background */
