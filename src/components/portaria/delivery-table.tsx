@@ -38,12 +38,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Search, MessageSquare } from "lucide-react";
+import { MoreHorizontal, Search, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { Delivery, DeliveryStatusFilter, Resident } from "@/lib/types";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+
+const ITEMS_PER_PAGE = 10;
 
 type DeliveryTableProps = {
   deliveries: Delivery[];
@@ -66,6 +68,7 @@ export function DeliveryTable({
   const [updatingDelivery, setUpdatingDelivery] = useState<Delivery | null>(null);
   const [pickupByName, setPickupByName] = useState("");
   const [previewingImage, setPreviewingImage] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
 
   const filteredDeliveries = useMemo(() => {
@@ -79,6 +82,13 @@ export function DeliveryTable({
           d.residentName.toLowerCase().includes(searchQuery.toLowerCase())
       ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [deliveries, statusFilter, searchQuery]);
+
+  const paginatedDeliveries = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredDeliveries.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredDeliveries, currentPage]);
+
+  const totalPages = Math.ceil(filteredDeliveries.length / ITEMS_PER_PAGE);
 
   const handleUpdateStatus = () => {
     if (updatingDelivery && pickupByName) {
@@ -114,11 +124,17 @@ export function DeliveryTable({
           <Input
             placeholder="Pesquisar por morador, apto ou descrição..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             className="pl-9"
           />
         </div>
-        <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as DeliveryStatusFilter)}>
+        <Tabs value={statusFilter} onValueChange={(value) => {
+            setStatusFilter(value as DeliveryStatusFilter);
+            setCurrentPage(1);
+        }}>
           <TabsList>
             <TabsTrigger value="all">Todos</TabsTrigger>
             <TabsTrigger value="PENDENTE">Pendentes</TabsTrigger>
@@ -140,8 +156,8 @@ export function DeliveryTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredDeliveries.length > 0 ? (
-              filteredDeliveries.map((delivery) => (
+            {paginatedDeliveries.length > 0 ? (
+              paginatedDeliveries.map((delivery) => (
                 <TableRow key={delivery.id}>
                   <TableCell className="font-medium max-w-[150px] truncate">{delivery.residentName}</TableCell>
                   <TableCell>{delivery.apartment} / {delivery.block}</TableCell>
@@ -217,6 +233,33 @@ export function DeliveryTable({
           </TableBody>
         </Table>
       </div>
+
+       {totalPages > 1 && (
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <span className="text-sm text-muted-foreground">
+            Página {currentPage} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Anterior
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            Próxima
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
 
       <AlertDialog open={!!deletingId} onOpenChange={(open) => !open && setDeletingId(null)}>
         <AlertDialogContent>
