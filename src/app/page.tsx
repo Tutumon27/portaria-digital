@@ -144,14 +144,14 @@ export default function Home() {
             };
             
             if (!mappedRow.id) {
-              // Pula linhas que não tem ID, talvez seja melhor registrar um erro
               return;
             }
             
             const existingIndex = newDeliveries.findIndex(d => d.id === mappedRow.id);
 
+            const isValidDate = (dateString: string) => dateString && !isNaN(new Date(dateString).getTime());
+
             if (existingIndex !== -1) {
-              // Atualiza entrega existente
               const existingDelivery = newDeliveries[existingIndex];
               const updatedDelivery = {
                 ...existingDelivery,
@@ -160,8 +160,8 @@ export default function Home() {
                 block: mappedRow.block || existingDelivery.block,
                 description: mappedRow.description || existingDelivery.description,
                 status: mappedRow.status === 'ENTREGUE' || mappedRow.status === 'PENDENTE' ? mappedRow.status : existingDelivery.status,
-                createdAt: mappedRow.createdAt ? new Date(mappedRow.createdAt).toISOString() : existingDelivery.createdAt,
-                deliveredAt: mappedRow.deliveredAt ? new Date(mappedRow.deliveredAt).toISOString() : existingDelivery.deliveredAt,
+                createdAt: isValidDate(mappedRow.createdAt) ? new Date(mappedRow.createdAt).toISOString() : existingDelivery.createdAt,
+                deliveredAt: isValidDate(mappedRow.deliveredAt) ? new Date(mappedRow.deliveredAt).toISOString() : existingDelivery.deliveredAt,
                 retiradoPor: mappedRow.retiradoPor || existingDelivery.retiradoPor,
               };
                if(isDelivery(updatedDelivery)) {
@@ -169,16 +169,15 @@ export default function Home() {
                  updatedCount++;
                }
             } else {
-              // Adiciona nova entrega
                const newDeliveryData = {
                 id: mappedRow.id,
                 residentName: mappedRow.residentName,
                 apartment: mappedRow.apartment,
                 block: mappedRow.block,
                 description: mappedRow.description,
-                createdAt: mappedRow.createdAt ? new Date(mappedRow.createdAt).toISOString() : new Date().toISOString(),
+                createdAt: isValidDate(mappedRow.createdAt) ? new Date(mappedRow.createdAt).toISOString() : new Date().toISOString(),
                 status: mappedRow.status === 'ENTREGUE' ? 'ENTREGUE' : 'PENDENTE',
-                deliveredAt: mappedRow.deliveredAt ? new Date(mappedRow.deliveredAt).toISOString() : undefined,
+                deliveredAt: isValidDate(mappedRow.deliveredAt) ? new Date(mappedRow.deliveredAt).toISOString() : undefined,
                 retiradoPor: mappedRow.retiradoPor,
               };
 

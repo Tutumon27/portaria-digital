@@ -34,8 +34,8 @@ export function exportToCsv(data: Delivery[], filename: string) {
     d.block,
     `"${d.description.replace(/"/g, '""')}"`,
     d.status,
-    d.createdAt ? new Date(d.createdAt).toLocaleString('pt-BR') : '',
-    d.deliveredAt ? new Date(d.deliveredAt).toLocaleString('pt-BR') : '',
+    d.createdAt ? new Date(d.createdAt).toISOString() : '',
+    d.deliveredAt ? new Date(d.deliveredAt).toISOString() : '',
     d.retiradoPor ? `"${d.retiradoPor.replace(/"/g, '""')}"` : ''
   ]);
 
