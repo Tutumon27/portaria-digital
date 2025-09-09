@@ -45,7 +45,7 @@ import type { Delivery, DeliveryStatusFilter, Resident } from "@/lib/types";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 5;
 
 type DeliveryTableProps = {
   deliveries: Delivery[];
