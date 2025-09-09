@@ -183,9 +183,10 @@ export function DeliveryTable({
                   </TableCell>
                   <TableCell>
                     <Badge
+                      variant={delivery.status === "PENDENTE" ? "destructive" : "default"}
                       className={cn({
-                        "bg-red-600 text-white": delivery.status === "PENDENTE",
-                        "bg-green-600 text-white": delivery.status === "ENTREGUE",
+                        "bg-red-600 text-white hover:bg-red-700": delivery.status === "PENDENTE",
+                        "bg-green-600 text-white hover:bg-green-700": delivery.status === "ENTREGUE",
                       })}
                     >
                       {delivery.status}
