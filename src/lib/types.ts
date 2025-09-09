@@ -2,6 +2,7 @@ export type Delivery = {
   id: string;
   apartment: string;
   block: '1' | '2' | '3';
+  residentName: string;
   description: string;
   photoUrl?: string;
   status: 'PENDENTE' | 'ENTREGUE';

@@ -29,12 +29,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BLOCKS, type Delivery } from "@/lib/types";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
+import { BLOCKS, type Delivery, type Resident } from "@/lib/types";
 import { useRef, useState, useEffect } from "react";
-import { Camera, Upload, X } from "lucide-react";
+import { Camera, Upload, X, Check, ChevronsUpDown } from "lucide-react";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 const deliverySchema = z.object({
+  residentName: z.string().min(1, "Nome do morador é obrigatório."),
   apartment: z.string().min(1, "Apartamento é obrigatório."),
   block: z.enum(BLOCKS, { required_error: "Bloco é obrigatório." }),
   description: z.string().min(1, "Descrição é obrigatória."),
@@ -62,10 +66,20 @@ export function DeliveryDialog({
   const photoInputRef = useRef<HTMLInputElement>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [residents, setResidents] = useState<Resident[]>([]);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+
+  useEffect(() => {
+    const storedResidents = localStorage.getItem('residents');
+    if (storedResidents) {
+      setResidents(JSON.parse(storedResidents));
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (initialData) {
       form.reset({
+        residentName: initialData.residentName,
         apartment: initialData.apartment,
         block: initialData.block,
         description: initialData.description,
@@ -73,7 +87,7 @@ export function DeliveryDialog({
       setPhotoPreview(initialData.photoUrl || null);
       setPhotoFile(null);
     } else {
-      form.reset({ apartment: "", block: undefined, description: "" });
+      form.reset({ residentName: "", apartment: "", block: undefined, description: "" });
       setPhotoPreview(null);
       setPhotoFile(null);
     }
@@ -103,6 +117,13 @@ export function DeliveryDialog({
     }
   };
 
+  const handleResidentSelect = (resident: Resident) => {
+    form.setValue('residentName', resident.name);
+    form.setValue('apartment', resident.apartment);
+    form.setValue('block', resident.block);
+    setPopoverOpen(false);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px]">
@@ -116,7 +137,65 @@ export function DeliveryDialog({
             onSubmit={form.handleSubmit(handleFormSubmit)}
             className="space-y-4"
           >
-            <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="residentName"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Nome do Morador</FormLabel>
+                   <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "w-full justify-between",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value
+                            ? residents.find(
+                                (resident) => resident.name === field.value
+                              )?.name
+                            : "Selecione o morador"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                       <Command>
+                        <CommandInput placeholder="Pesquisar morador..." />
+                        <CommandList>
+                          <CommandEmpty>Nenhum morador encontrado.</CommandEmpty>
+                          <CommandGroup>
+                            {residents.map((resident) => (
+                              <CommandItem
+                                value={resident.name}
+                                key={resident.id}
+                                onSelect={() => handleResidentSelect(resident)}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    resident.name === field.value
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                {resident.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="apartment"
@@ -124,7 +203,7 @@ export function DeliveryDialog({
                   <FormItem>
                     <FormLabel>Apartamento</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ex: 1904" {...field} />
+                      <Input placeholder="Ex: 1904" {...field} readOnly />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -138,7 +217,8 @@ export function DeliveryDialog({
                     <FormLabel>Bloco</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
+                      disabled
                     >
                       <FormControl>
                         <SelectTrigger>

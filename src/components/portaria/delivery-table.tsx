@@ -69,7 +69,8 @@ export function DeliveryTable({
         (d) =>
           searchQuery === "" ||
           d.apartment.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          d.description.toLowerCase().includes(searchQuery.toLowerCase())
+          d.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          d.residentName.toLowerCase().includes(searchQuery.toLowerCase())
       ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [deliveries, statusFilter, searchQuery]);
 
@@ -87,7 +88,7 @@ export function DeliveryTable({
         <div className="relative w-full md:max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Pesquisar por apartamento ou descrição..."
+            placeholder="Pesquisar por morador, apto ou descrição..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -105,8 +106,8 @@ export function DeliveryTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Apartamento</TableHead>
-              <TableHead>Bloco</TableHead>
+              <TableHead>Morador</TableHead>
+              <TableHead>Apto / Bloco</TableHead>
               <TableHead className="hidden md:table-cell">Descrição</TableHead>
               <TableHead className="hidden sm:table-cell">Foto</TableHead>
               <TableHead>Status</TableHead>
@@ -118,8 +119,8 @@ export function DeliveryTable({
             {filteredDeliveries.length > 0 ? (
               filteredDeliveries.map((delivery) => (
                 <TableRow key={delivery.id}>
-                  <TableCell className="font-medium">{delivery.apartment}</TableCell>
-                  <TableCell>{delivery.block}</TableCell>
+                  <TableCell className="font-medium max-w-[150px] truncate">{delivery.residentName}</TableCell>
+                  <TableCell>{delivery.apartment} / {delivery.block}</TableCell>
                   <TableCell className="hidden md:table-cell max-w-xs truncate">{delivery.description}</TableCell>
                   <TableCell className="hidden sm:table-cell">
                     {delivery.photoUrl ? (

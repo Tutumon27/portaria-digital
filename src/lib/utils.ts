@@ -29,11 +29,11 @@ export function exportToCsv(data: (Delivery | Resident)[], filename: string) {
 
   if (isDelivery(data[0])) {
      headers = [
-      'ID', 'Apartamento', 'Bloco', 'Descrição', 'Status', 
+      'ID', 'Morador', 'Apartamento', 'Bloco', 'Descrição', 'Status', 
       'Data de Criação', 'Data de Entrega', 'Retirado Por'
     ];
     rows = (data as Delivery[]).map(d => [
-      d.id, d.apartment, d.block, `"${d.description.replace(/"/g, '""')}"`,
+      d.id, `"${d.residentName.replace(/"/g, '""')}"`, d.apartment, d.block, `"${d.description.replace(/"/g, '""')}"`,
       d.status, new Date(d.createdAt).toLocaleString('pt-BR'),
       d.deliveredAt ? new Date(d.deliveredAt).toLocaleString('pt-BR') : '',
       d.retiradoPor || ''

@@ -15,6 +15,7 @@ const MOCK_DELIVERIES: Delivery[] = [
     id: '1',
     apartment: '101',
     block: '1',
+    residentName: 'João da Silva',
     description: 'Pacote Amazon - Livros',
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     status: 'PENDENTE',
@@ -24,6 +25,7 @@ const MOCK_DELIVERIES: Delivery[] = [
     id: '2',
     apartment: '504',
     block: '2',
+    residentName: 'Maria Oliveira',
     description: 'Mercado Livre - Eletrônicos',
     createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     status: 'ENTREGUE',
@@ -35,6 +37,7 @@ const MOCK_DELIVERIES: Delivery[] = [
     id: '3',
     apartment: '1202',
     block: '3',
+    residentName: 'Pedro Santos',
     description: 'Magazine Luiza - Fone de ouvido',
     createdAt: new Date().toISOString(),
     status: 'PENDENTE',
@@ -86,7 +89,7 @@ export default function Home() {
         d.id === editingDelivery.id ? { ...editingDelivery, ...data, photoUrl } : d
       );
       setDeliveries(updatedDeliveries);
-      toast({ title: "Encomenda atualizada!", description: `A encomenda para o apto ${data.apartment} foi atualizada.` });
+      toast({ title: "Encomenda atualizada!", description: `A encomenda para ${data.residentName} foi atualizada.` });
     } else {
       const newDelivery: Delivery = {
         id: new Date().getTime().toString(),
@@ -96,7 +99,7 @@ export default function Home() {
         photoUrl,
       };
       setDeliveries([newDelivery, ...deliveries]);
-      toast({ title: "Encomenda registrada!", description: `Nova encomenda para o apto ${data.apartment} registrada.` });
+      toast({ title: "Encomenda registrada!", description: `Nova encomenda para ${data.residentName} registrada.` });
     }
   };
 
