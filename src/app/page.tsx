@@ -121,30 +121,81 @@ export default function Home() {
       skipEmptyLines: true,
       complete: (results) => {
         try {
-          const importedData = results.data
-            .map((row: any) => ({
-              ...row,
-              id: row.ID || new Date().getTime().toString() + Math.random(),
+          if (results.data.length === 0) {
+            throw new Error("O arquivo CSV está vazio ou em um formato inválido.");
+          }
+
+          let addedCount = 0;
+          let updatedCount = 0;
+          
+          const newDeliveries = [...deliveries];
+
+          results.data.forEach((row: any) => {
+             const mappedRow = {
+              id: row.ID,
               residentName: row['Morador'],
               apartment: row.Apartamento,
               block: row.Bloco,
               description: row.Descrição,
-              createdAt: row['Data de Criação'] ? new Date(row['Data de Criação']).toISOString() : new Date().toISOString(),
-              status: row.Status === 'ENTREGUE' ? 'ENTREGUE' : 'PENDENTE',
-              deliveredAt: row['Data de Entrega'] ? new Date(row['Data de Entrega']).toISOString() : undefined,
+              createdAt: row['Data de Criação'],
+              status: row.Status,
+              deliveredAt: row['Data de Entrega'],
               retiradoPor: row['Retirado Por'],
-            }))
-            .filter(isDelivery);
-          
-          if (importedData.length === 0 && results.data.length > 0) {
-            throw new Error("O arquivo CSV não contém dados de entrega válidos ou os cabeçalhos não correspondem ao formato esperado.");
-          }
+            };
+            
+            if (!mappedRow.id) {
+              // Pula linhas que não tem ID, talvez seja melhor registrar um erro
+              return;
+            }
+            
+            const existingIndex = newDeliveries.findIndex(d => d.id === mappedRow.id);
 
-          setDeliveries(prev => [...prev, ...importedData]);
-          toast({
-            title: "Importação concluída!",
-            description: `${importedData.length} encomendas foram importadas com sucesso.`,
+            if (existingIndex !== -1) {
+              // Atualiza entrega existente
+              const existingDelivery = newDeliveries[existingIndex];
+              const updatedDelivery = {
+                ...existingDelivery,
+                residentName: mappedRow.residentName || existingDelivery.residentName,
+                apartment: mappedRow.apartment || existingDelivery.apartment,
+                block: mappedRow.block || existingDelivery.block,
+                description: mappedRow.description || existingDelivery.description,
+                status: mappedRow.status === 'ENTREGUE' || mappedRow.status === 'PENDENTE' ? mappedRow.status : existingDelivery.status,
+                createdAt: mappedRow.createdAt ? new Date(mappedRow.createdAt).toISOString() : existingDelivery.createdAt,
+                deliveredAt: mappedRow.deliveredAt ? new Date(mappedRow.deliveredAt).toISOString() : existingDelivery.deliveredAt,
+                retiradoPor: mappedRow.retiradoPor || existingDelivery.retiradoPor,
+              };
+               if(isDelivery(updatedDelivery)) {
+                 newDeliveries[existingIndex] = updatedDelivery;
+                 updatedCount++;
+               }
+            } else {
+              // Adiciona nova entrega
+               const newDeliveryData = {
+                id: mappedRow.id,
+                residentName: mappedRow.residentName,
+                apartment: mappedRow.apartment,
+                block: mappedRow.block,
+                description: mappedRow.description,
+                createdAt: mappedRow.createdAt ? new Date(mappedRow.createdAt).toISOString() : new Date().toISOString(),
+                status: mappedRow.status === 'ENTREGUE' ? 'ENTREGUE' : 'PENDENTE',
+                deliveredAt: mappedRow.deliveredAt ? new Date(mappedRow.deliveredAt).toISOString() : undefined,
+                retiradoPor: mappedRow.retiradoPor,
+              };
+
+              if (isDelivery(newDeliveryData)) {
+                newDeliveries.push(newDeliveryData);
+                addedCount++;
+              }
+            }
           });
+
+          setDeliveries(newDeliveries);
+          
+          toast({
+            title: "Importação Concluída!",
+            description: `${addedCount} encomenda(s) adicionada(s) e ${updatedCount} atualizada(s).`,
+          });
+
         } catch (error: any) {
           toast({
             variant: "destructive",
@@ -162,7 +213,6 @@ export default function Home() {
       },
     });
 
-    // Reset apara permitir a seleção do mesmo arquivo novamente
     event.target.value = '';
   };
 
