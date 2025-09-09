@@ -74,6 +74,7 @@ export function DeliveryDialog({
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [isResidentDialogOpen, setResidentDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [newResidentInitialData, setNewResidentInitialData] = useState<Partial<Resident> | null>(null);
 
   const fetchResidents = () => {
     const storedResidents = localStorage.getItem('residents');
@@ -136,6 +137,11 @@ export function DeliveryDialog({
     setPopoverOpen(false);
     setSearchQuery("");
   };
+
+  const handleAddNewResident = () => {
+    setNewResidentInitialData({ name: searchQuery });
+    setResidentDialogOpen(true);
+  }
 
   const handleResidentSubmit = (data: Omit<Resident, 'id'>) => {
       const allResidents = JSON.parse(localStorage.getItem('residents') || '[]');
@@ -208,7 +214,7 @@ export function DeliveryDialog({
                                 <Button
                                   variant="link"
                                   className="p-1 h-auto"
-                                  onClick={() => setResidentDialogOpen(true)}
+                                  onClick={handleAddNewResident}
                                 >
                                   <PlusCircle className="mr-1" />
                                   Adicionar morador
@@ -342,9 +348,8 @@ export function DeliveryDialog({
         isOpen={isResidentDialogOpen}
         onOpenChange={setResidentDialogOpen}
         onSubmit={handleResidentSubmit}
+        initialData={newResidentInitialData}
       />
     </>
   );
 }
-
-    

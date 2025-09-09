@@ -46,7 +46,7 @@ type ResidentDialogProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onSubmit: (data: ResidentFormData) => void;
-  initialData?: Resident | null;
+  initialData?: Partial<Resident> | null;
 };
 
 export function ResidentDialog({
@@ -60,10 +60,18 @@ export function ResidentDialog({
   });
 
   useEffect(() => {
-    if (initialData) {
-      form.reset(initialData);
-    } else {
-      form.reset({ name: "", apartment: "", block: undefined, document: "", phone: "" });
+    if (isOpen) {
+      if (initialData) {
+        form.reset({
+          name: initialData.name || "",
+          apartment: initialData.apartment || "",
+          block: initialData.block,
+          document: initialData.document || "",
+          phone: initialData.phone || "",
+        });
+      } else {
+        form.reset({ name: "", apartment: "", block: undefined, document: "", phone: "" });
+      }
     }
   }, [initialData, isOpen, form]);
 
@@ -77,7 +85,7 @@ export function ResidentDialog({
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle>
-            {initialData ? "Editar Morador" : "Adicionar Morador"}
+            {initialData?.id ? "Editar Morador" : "Adicionar Morador"}
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -181,5 +189,3 @@ export function ResidentDialog({
     </Dialog>
   );
 }
-
-    
