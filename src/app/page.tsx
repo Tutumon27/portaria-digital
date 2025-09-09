@@ -4,7 +4,6 @@
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import type { Delivery, Resident } from "@/lib/types";
-import { PageHeader } from "@/components/layout/page-header";
 import { DeliveryTable } from "@/components/portaria/delivery-table";
 import { DeliveryDialog } from "@/components/portaria/delivery-dialog";
 import { exportToCsv } from '@/lib/utils';
@@ -54,8 +53,8 @@ const MOCK_RESIDENTS: Resident[] = [
 
 
 export default function Home() {
-  const [deliveries, setDeliveries] = useState<Delivery[]>(MOCK_DELIVERIES);
-  const [residents, setResidents] = useState<Resident[]>(MOCK_RESIDENTS);
+  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
+  const [residents, setResidents] = useState<Resident[]>([]);
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [editingDelivery, setEditingDelivery] = useState<Delivery | null>(null);
   const { toast } = useToast();
@@ -152,32 +151,35 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-       <PageHeader title="Controle de Entregas">
-        <Button onClick={handleAddClick}>
-          <PlusCircle />
-          Adicionar
-        </Button>
-        <Button onClick={handleExportClick} variant="secondary">
-          <Download />
-          Exportar
-        </Button>
-      </PageHeader>
-      <div className="p-4 md:p-6">
-        <DeliveryTable
-          deliveries={deliveries}
-          residents={residents}
-          onEdit={handleEditClick}
-          onDelete={handleDelete}
-          onUpdateStatus={handleUpdateStatus}
-        />
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold">Controle de Entregas</h1>
+        <div className="flex items-center gap-2">
+           <Button onClick={handleAddClick}>
+            <PlusCircle />
+            Adicionar
+          </Button>
+          <Button onClick={handleExportClick} variant="secondary">
+            <Download />
+            Exportar
+          </Button>
+        </div>
       </div>
+
+      <DeliveryTable
+        deliveries={deliveries}
+        residents={residents}
+        onEdit={handleEditClick}
+        onDelete={handleDelete}
+        onUpdateStatus={handleUpdateStatus}
+      />
+      
       <DeliveryDialog
         isOpen={isDialogOpen}
         onOpenChange={setDialogOpen}
         onSubmit={handleSubmit}
         initialData={editingDelivery}
       />
-    </main>
+    </div>
   );
 }

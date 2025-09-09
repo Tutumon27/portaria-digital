@@ -1,23 +1,18 @@
 
 "use client";
 
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import Link from "next/link";
+import { Package } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-type PageHeaderProps = {
-  title: string;
-  children?: React.ReactNode;
-};
-
-export function PageHeader({ title, children }: PageHeaderProps) {
+export function PageHeader() {
   return (
-    <header className="flex items-center justify-between p-4 md:px-6 md:py-4 border-b border-border sticky top-0 bg-background z-10">
+    <header className="flex items-center justify-between p-4 md:px-6 border-b border-border sticky top-0 bg-background z-10">
+      <Link href="/" className="flex items-center gap-2">
+        <Package className="w-8 h-8 text-primary" />
+        <h1 className="text-xl font-bold">Portaria Digital</h1>
+      </Link>
       <div className="flex items-center gap-2">
-        <SidebarTrigger className="md:hidden" />
-        <h1 className="text-xl md:text-2xl font-bold">{title}</h1>
-      </div>
-      <div className="flex items-center gap-2">
-        {children}
         <ThemeToggle />
       </div>
     </header>

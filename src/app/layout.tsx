@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { AppLayout } from '@/components/layout/app-layout';
 import { ThemeProvider } from '@/components/theme-provider';
+import { PageHeader } from '@/components/layout/page-header';
 
 export const metadata: Metadata = {
   title: 'Portaria Digital',
@@ -28,9 +28,8 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AppLayout>
-            {children}
-          </AppLayout>
+          <PageHeader />
+          <main>{children}</main>
           <Toaster />
         </ThemeProvider>
       </body>
