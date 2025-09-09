@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -47,24 +48,17 @@ const MOCK_DELIVERIES: Delivery[] = [
 
 
 export default function Home() {
-  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
+  const [deliveries, setDeliveries] = useState<Delivery[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const storedDeliveries = localStorage.getItem('deliveries');
+    return storedDeliveries ? JSON.parse(storedDeliveries) : MOCK_DELIVERIES;
+  });
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [editingDelivery, setEditingDelivery] = useState<Delivery | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    const storedDeliveries = localStorage.getItem('deliveries');
-    if (storedDeliveries) {
-      setDeliveries(JSON.parse(storedDeliveries));
-    } else {
-      setDeliveries(MOCK_DELIVERIES);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (deliveries.length > 0 || localStorage.getItem('deliveries')) {
-        localStorage.setItem('deliveries', JSON.stringify(deliveries));
-    }
+    localStorage.setItem('deliveries', JSON.stringify(deliveries));
   }, [deliveries]);
 
   const handleAddClick = () => {
