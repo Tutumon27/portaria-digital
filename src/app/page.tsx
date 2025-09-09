@@ -260,6 +260,18 @@ export default function Home() {
     toast({ title: "Entrega confirmada!", description: `A encomenda foi marcada como entregue.` });
   };
 
+  const handleAddResident = (name: string) => {
+    const newResident: Resident = {
+      id: new Date().getTime().toString(),
+      name,
+      apartment: '',
+      block: '1', 
+    };
+    setResidents(prev => [...prev, newResident]);
+    toast({ title: "Morador adicionado!", description: `${name} foi adicionado(a). Preencha o resto dos detalhes.` });
+    return newResident;
+  };
+
   if (!isClient) {
     return null;
   }
@@ -305,6 +317,7 @@ export default function Home() {
         onSubmit={handleSubmit}
         initialData={editingDelivery}
         residents={residents}
+        onAddResident={handleAddResident}
       />
     </div>
   );

@@ -45,7 +45,7 @@ import {
 } from "@/components/ui/popover";
 import { BLOCKS, type Delivery, type Resident } from "@/lib/types";
 import { useRef, useState, useEffect } from "react";
-import { Camera, Upload, X, Check, ChevronsUpDown } from "lucide-react";
+import { Camera, Upload, X, Check, ChevronsUpDown, UserPlus } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
@@ -64,6 +64,7 @@ type DeliveryDialogProps = {
   onSubmit: (data: DeliveryFormData, photo?: File) => void;
   initialData?: Delivery | null;
   residents: Resident[];
+  onAddResident: (name: string) => Resident;
 };
 
 export function DeliveryDialog({
@@ -72,6 +73,7 @@ export function DeliveryDialog({
   onSubmit,
   initialData,
   residents,
+  onAddResident,
 }: DeliveryDialogProps) {
   const form = useForm<DeliveryFormData>({
     resolver: zodResolver(deliverySchema),
@@ -125,7 +127,20 @@ export function DeliveryDialog({
     }
   };
 
-  const filteredResidents = residents.filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const handleAddNewResident = (name: string) => {
+    const newResident = onAddResident(name);
+    if(newResident) {
+      form.setValue("residentName", newResident.name);
+      form.setValue("apartment", newResident.apartment);
+      form.setValue("block", newResident.block);
+    }
+    setPopoverOpen(false);
+    setSearchQuery("");
+  }
+
+  const filteredResidents = searchQuery
+    ? residents.filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    : residents;
 
   return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -174,7 +189,18 @@ export function DeliveryDialog({
                               onValueChange={setSearchQuery}
                            />
                           <CommandList>
-                            <CommandEmpty>Nenhum morador encontrado.</CommandEmpty>
+                            <CommandEmpty>
+                              {searchQuery && (
+                                <CommandItem
+                                  onSelect={() => handleAddNewResident(searchQuery)}
+                                  className="cursor-pointer"
+                                >
+                                  <UserPlus className="mr-2 h-4 w-4" />
+                                  Cadastrar "{searchQuery}"
+                                </CommandItem>
+                              )}
+                              {!searchQuery && "Nenhum morador encontrado."}
+                            </CommandEmpty>
                             <CommandGroup>
                               {filteredResidents.map((resident) => (
                                 <CommandItem
@@ -300,5 +326,3 @@ export function DeliveryDialog({
       </Dialog>
   );
 }
-
-    
