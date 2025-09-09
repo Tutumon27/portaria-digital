@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import type { Delivery } from "@/lib/types";
-import { PortariaHeader } from "@/components/portaria/header";
+import { PageHeader } from "@/components/layout/page-header";
 import { DeliveryTable } from "@/components/portaria/delivery-table";
 import { DeliveryDialog } from "@/components/portaria/delivery-dialog";
 import { exportToCsv } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Download, PlusCircle } from 'lucide-react';
 
-// Mock data to demonstrate functionality
 const MOCK_DELIVERIES: Delivery[] = [
   {
     id: '1',
@@ -49,8 +50,6 @@ export default function Home() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // In a real app, you would fetch this from a database.
-    // Here we use mock data and localStorage for persistence.
     const storedDeliveries = localStorage.getItem('deliveries');
     if (storedDeliveries) {
       setDeliveries(JSON.parse(storedDeliveries));
@@ -60,7 +59,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // Persist deliveries to localStorage whenever they change
     if (deliveries.length > 0 || localStorage.getItem('deliveries')) {
         localStorage.setItem('deliveries', JSON.stringify(deliveries));
     }
@@ -77,21 +75,19 @@ export default function Home() {
   };
 
   const handleExportClick = () => {
-    exportToCsv(deliveries);
+    exportToCsv(deliveries, 'entregas.csv');
   };
 
   const handleSubmit = (data: Omit<Delivery, 'id' | 'createdAt' | 'status'>, photo?: File) => {
     const photoUrl = photo ? URL.createObjectURL(photo) : (editingDelivery?.photoUrl || undefined);
     
     if (editingDelivery) {
-      // Update existing delivery
       const updatedDeliveries = deliveries.map(d =>
         d.id === editingDelivery.id ? { ...editingDelivery, ...data, photoUrl } : d
       );
       setDeliveries(updatedDeliveries);
       toast({ title: "Encomenda atualizada!", description: `A encomenda para o apto ${data.apartment} foi atualizada.` });
     } else {
-      // Add new delivery
       const newDelivery: Delivery = {
         id: new Date().getTime().toString(),
         ...data,
@@ -119,14 +115,25 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-background">
-      <PortariaHeader onAdd={handleAddClick} onExport={handleExportClick} />
-      <DeliveryTable
-        deliveries={deliveries}
-        onEdit={handleEditClick}
-        onDelete={handleDelete}
-        onUpdateStatus={handleUpdateStatus}
-      />
+    <main className="min-h-screen bg-background text-foreground">
+       <PageHeader title="Controle de Entregas">
+        <Button onClick={handleAddClick}>
+          <PlusCircle />
+          Adicionar
+        </Button>
+        <Button onClick={handleExportClick} variant="secondary">
+          <Download />
+          Exportar
+        </Button>
+      </PageHeader>
+      <div className="p-4 md:p-6">
+        <DeliveryTable
+          deliveries={deliveries}
+          onEdit={handleEditClick}
+          onDelete={handleDelete}
+          onUpdateStatus={handleUpdateStatus}
+        />
+      </div>
       <DeliveryDialog
         isOpen={isDialogOpen}
         onOpenChange={setDialogOpen}

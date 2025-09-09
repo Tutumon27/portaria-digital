@@ -40,6 +40,7 @@ import { MoreHorizontal, Search } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { Delivery, DeliveryStatusFilter } from "@/lib/types";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type DeliveryTableProps = {
   deliveries: Delivery[];
@@ -81,7 +82,7 @@ export function DeliveryTable({
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="space-y-4">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="relative w-full md:max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -92,26 +93,13 @@ export function DeliveryTable({
             className="pl-9"
           />
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant={statusFilter === "all" ? "default" : "secondary"}
-            onClick={() => setStatusFilter("all")}
-          >
-            Todos
-          </Button>
-          <Button
-            variant={statusFilter === "PENDENTE" ? "default" : "secondary"}
-            onClick={() => setStatusFilter("PENDENTE")}
-          >
-            Pendentes
-          </Button>
-          <Button
-            variant={statusFilter === "ENTREGUE" ? "default" : "secondary"}
-            onClick={() => setStatusFilter("ENTREGUE")}
-          >
-            Entregues
-          </Button>
-        </div>
+        <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as DeliveryStatusFilter)}>
+          <TabsList>
+            <TabsTrigger value="all">Todos</TabsTrigger>
+            <TabsTrigger value="PENDENTE">Pendentes</TabsTrigger>
+            <TabsTrigger value="ENTREGUE">Entregues</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
       <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
         <Table>
@@ -177,7 +165,7 @@ export function DeliveryTable({
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuItem
-                          className="text-red-500"
+                          className="text-red-500 hover:!text-red-500"
                           onClick={() => setDeletingId(delivery.id)}
                         >
                           Excluir

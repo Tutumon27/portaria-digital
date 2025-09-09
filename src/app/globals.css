@@ -33,6 +33,13 @@
     --ring: 0 0% 83.1%;
     
     --radius: 0.5rem;
+
+    --sidebar-background: 240 5% 12%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-accent: 240 4% 19%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-ring: 0 0% 83.1%;
   }
 }
 
