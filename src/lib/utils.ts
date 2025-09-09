@@ -28,14 +28,34 @@ export function exportToCsv(data: Delivery[], filename: string) {
     'Data de Criação', 'Data de Entrega', 'Retirado Por'
   ];
   const rows = data.map(d => [
-    d.id, `"${d.residentName.replace(/"/g, '""')}"`, d.apartment, d.block, `"${d.description.replace(/"/g, '""')}"`,
-    d.status, new Date(d.createdAt).toLocaleString('pt-BR'),
+    d.id,
+    `"${d.residentName.replace(/"/g, '""')}"`,
+    d.apartment,
+    d.block,
+    `"${d.description.replace(/"/g, '""')}"`,
+    d.status,
+    d.createdAt ? new Date(d.createdAt).toLocaleString('pt-BR') : '',
     d.deliveredAt ? new Date(d.deliveredAt).toLocaleString('pt-BR') : '',
-    d.retiradoPor || ''
+    d.retiradoPor ? `"${d.retiradoPor.replace(/"/g, '""')}"` : ''
   ]);
 
   const csvRows = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
   const csvContent = "data:text/csv;charset=utf-8," + csvRows;
   
   downloadCsv(csvContent, filename);
+}
+
+// Type guard to check if an object is a valid Delivery
+export function isDelivery(obj: any): obj is Delivery {
+  return (
+    obj &&
+    typeof obj.id === 'string' &&
+    typeof obj.residentName === 'string' &&
+    typeof obj.apartment === 'string' &&
+    typeof obj.block === 'string' &&
+    typeof obj.description === 'string' &&
+    (obj.status === 'PENDENTE' || obj.status === 'ENTREGUE') &&
+    typeof obj.createdAt === 'string' &&
+    !isNaN(new Date(obj.createdAt).getTime())
+  );
 }

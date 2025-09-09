@@ -1,14 +1,15 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import type { Delivery, Resident } from "@/lib/types";
 import { DeliveryTable } from "@/components/portaria/delivery-table";
 import { DeliveryDialog } from "@/components/portaria/delivery-dialog";
-import { exportToCsv } from '@/lib/utils';
+import { exportToCsv, isDelivery } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Download, PlusCircle } from 'lucide-react';
+import { Download, PlusCircle, Upload } from 'lucide-react';
+import Papa from 'papaparse';
 
 const MOCK_DELIVERIES: Delivery[] = [
   {
@@ -59,6 +60,7 @@ export default function Home() {
   const [editingDelivery, setEditingDelivery] = useState<Delivery | null>(null);
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -105,6 +107,65 @@ export default function Home() {
     setEditingDelivery(delivery);
     setDialogOpen(true);
   };
+  
+  const handleImportClick = () => {
+    importInputRef.current?.click();
+  };
+
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        try {
+          const importedData = results.data
+            .map((row: any) => ({
+              ...row,
+              id: row.ID || new Date().getTime().toString() + Math.random(),
+              residentName: row['Morador'],
+              apartment: row.Apartamento,
+              block: row.Bloco,
+              description: row.Descrição,
+              createdAt: row['Data de Criação'] ? new Date(row['Data de Criação']).toISOString() : new Date().toISOString(),
+              status: row.Status === 'ENTREGUE' ? 'ENTREGUE' : 'PENDENTE',
+              deliveredAt: row['Data de Entrega'] ? new Date(row['Data de Entrega']).toISOString() : undefined,
+              retiradoPor: row['Retirado Por'],
+            }))
+            .filter(isDelivery);
+          
+          if (importedData.length === 0 && results.data.length > 0) {
+            throw new Error("O arquivo CSV não contém dados de entrega válidos ou os cabeçalhos não correspondem ao formato esperado.");
+          }
+
+          setDeliveries(prev => [...prev, ...importedData]);
+          toast({
+            title: "Importação concluída!",
+            description: `${importedData.length} encomendas foram importadas com sucesso.`,
+          });
+        } catch (error: any) {
+          toast({
+            variant: "destructive",
+            title: "Erro na importação",
+            description: error.message || "Não foi possível importar o arquivo. Verifique o formato e tente novamente.",
+          });
+        }
+      },
+      error: (error: any) => {
+        toast({
+          variant: "destructive",
+          title: "Erro ao ler o arquivo",
+          description: error.message,
+        });
+      },
+    });
+
+    // Reset apara permitir a seleção do mesmo arquivo novamente
+    event.target.value = '';
+  };
+
 
   const handleExportClick = () => {
     const now = new Date();
@@ -163,6 +224,17 @@ export default function Home() {
             <PlusCircle />
             Adicionar
           </Button>
+           <Button onClick={handleImportClick} variant="secondary">
+            <Upload />
+            Importar
+          </Button>
+          <input
+            type="file"
+            ref={importInputRef}
+            onChange={handleFileImport}
+            accept=".csv"
+            className="hidden"
+          />
           <Button onClick={handleExportClick} variant="secondary">
             <Download />
             Exportar
