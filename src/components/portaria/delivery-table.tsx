@@ -44,6 +44,7 @@ import { ptBR } from "date-fns/locale";
 import type { Delivery, DeliveryStatusFilter, Resident } from "@/lib/types";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -181,8 +182,13 @@ export function DeliveryTable({
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={delivery.status === "ENTREGUE" ? "secondary" : "default"}>
-                        {delivery.status}
+                    <Badge
+                      className={cn({
+                        "bg-red-600 text-white": delivery.status === "PENDENTE",
+                        "bg-green-600 text-white": delivery.status === "ENTREGUE",
+                      })}
+                    >
+                      {delivery.status}
                     </Badge>
                   </TableCell>
                   <TableCell className="hidden lg:table-cell">
