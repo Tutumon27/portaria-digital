@@ -19,18 +19,18 @@ export function PageHeader() {
           <h1 className="text-xl font-bold hidden sm:block">Portaria Digital</h1>
         </Link>
         <nav className="flex items-center gap-2">
-            <Link href="/" asChild>
-                <Button variant={pathname === '/' ? 'secondary' : 'ghost'}>
+            <Button asChild variant={pathname === '/' ? 'secondary' : 'ghost'}>
+                <Link href="/">
                     <Package className="sm:mr-2"/>
                     Entregas
-                </Button>
-            </Link>
-             <Link href="/moradores" asChild>
-                <Button variant={pathname === '/moradores' ? 'secondary' : 'ghost'}>
+                </Link>
+            </Button>
+             <Button asChild variant={pathname === '/moradores' ? 'secondary' : 'ghost'}>
+                <Link href="/moradores">
                     <Users className="sm:mr-2"/>
                     Moradores
-                </Button>
-            </Link>
+                </Link>
+            </Button>
         </nav>
       </div>
       <div className="flex items-center gap-2">
