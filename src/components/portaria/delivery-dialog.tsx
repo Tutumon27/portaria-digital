@@ -30,15 +30,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { BLOCKS, type Delivery, type Resident } from "@/lib/types";
 import { useRef, useState, useEffect } from "react";
-import { Camera, Upload, X, Check, ChevronsUpDown, PlusCircle } from "lucide-react";
+import { Camera, Upload, X } from "lucide-react";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
-import { ResidentDialog } from "@/components/moradores/resident-dialog";
-import { useToast } from "@/hooks/use-toast";
 
 const deliverySchema = z.object({
   residentName: z.string().min(1, "Nome do morador é obrigatório."),
@@ -66,32 +61,9 @@ export function DeliveryDialog({
     resolver: zodResolver(deliverySchema),
   });
   
-  const { toast } = useToast();
   const photoInputRef = useRef<HTMLInputElement>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [residents, setResidents] = useState<Resident[]>([]);
-  const [popoverOpen, setPopoverOpen] = useState(false);
-  const [isResidentDialogOpen, setResidentDialogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [newResidentInitialData, setNewResidentInitialData] = useState<Partial<Resident> | null>(null);
-
-  const fetchResidents = () => {
-    try {
-      const storedResidents = localStorage.getItem('residents');
-      if (storedResidents) {
-        setResidents(JSON.parse(storedResidents));
-      }
-    } catch (error) {
-      console.error("Failed to parse residents from localStorage", error);
-    }
-  }
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchResidents();
-    }
-  }, [isOpen]);
 
   useEffect(() => {
     if (initialData) {
@@ -134,38 +106,7 @@ export function DeliveryDialog({
     }
   };
 
-  const handleResidentSelect = (resident: Resident) => {
-    form.setValue('residentName', resident.name);
-    form.setValue('apartment', resident.apartment);
-    form.setValue('block', resident.block);
-    setPopoverOpen(false);
-    setSearchQuery("");
-  };
-
-  const handleAddNewResident = () => {
-    setNewResidentInitialData({ name: searchQuery });
-    setResidentDialogOpen(true);
-  }
-
-  const handleResidentSubmit = (data: Omit<Resident, 'id'>) => {
-      const allResidents = JSON.parse(localStorage.getItem('residents') || '[]');
-      const newResident: Resident = {
-        id: new Date().getTime().toString(),
-        ...data,
-      };
-      const updatedResidents = [newResident, ...allResidents];
-      localStorage.setItem('residents', JSON.stringify(updatedResidents));
-      
-      setResidents(updatedResidents);
-      toast({ title: "Morador registrado!", description: `${data.name} foi adicionado(a) à lista.` });
-      
-      handleResidentSelect(newResident);
-  };
-
-  const filteredResidents = residents.filter(resident => resident.name.toLowerCase().includes(searchQuery.toLowerCase()));
-
   return (
-    <>
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
@@ -182,77 +123,11 @@ export function DeliveryDialog({
                 control={form.control}
                 name="residentName"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
+                  <FormItem>
                     <FormLabel>Nome do Morador</FormLabel>
-                     <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            className={cn(
-                              "w-full justify-between",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value
-                              ? residents.find(
-                                  (resident) => resident.name === field.value
-                                )?.name
-                              : "Selecione o morador"}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                         <Command>
-                          <CommandInput 
-                            placeholder="Pesquisar morador..." 
-                            value={searchQuery}
-                            onValueChange={setSearchQuery}
-                          />
-                          <CommandList>
-                            <CommandEmpty>
-                              <div className="text-center p-4 text-sm">
-                                Nenhum morador encontrado.
-                                <Button
-                                  variant="link"
-                                  className="p-1 h-auto"
-                                  onClick={handleAddNewResident}
-                                >
-                                  <PlusCircle className="mr-1" />
-                                  Adicionar morador
-                                </Button>
-                              </div>
-                            </CommandEmpty>
-                            <CommandGroup>
-                              {filteredResidents.map((resident) => (
-                                <CommandItem
-                                  value={resident.name}
-                                  key={resident.id}
-                                  onSelect={() => handleResidentSelect(resident)}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      resident.name === field.value
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                  <div>
-                                    <div>{resident.name}</div>
-                                    <div className="text-xs text-muted-foreground">
-                                      Apto: {resident.apartment} / Bloco: {resident.block}
-                                    </div>
-                                  </div>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
+                    <FormControl>
+                      <Input placeholder="Ex: João da Silva" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -265,7 +140,7 @@ export function DeliveryDialog({
                     <FormItem>
                       <FormLabel>Apartamento</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: 1904" {...field} readOnly />
+                        <Input placeholder="Ex: 101" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -280,7 +155,6 @@ export function DeliveryDialog({
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
-                        disabled
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -348,12 +222,5 @@ export function DeliveryDialog({
           </Form>
         </DialogContent>
       </Dialog>
-      <ResidentDialog
-        isOpen={isResidentDialogOpen}
-        onOpenChange={setResidentDialogOpen}
-        onSubmit={handleResidentSubmit}
-        initialData={newResidentInitialData}
-      />
-    </>
   );
 }

@@ -12,7 +12,7 @@ import {
   SidebarInset,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Package, Users, Home } from "lucide-react";
+import { Package, Home } from "lucide-react";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -38,16 +38,6 @@ function AppSidebar() {
                                 <div>
                                     <Home />
                                     <span>Entregas</span>
-                                </div>
-                            </SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                         <Link href="/moradores" passHref>
-                            <SidebarMenuButton asChild isActive={pathname === '/moradores'} tooltip="Moradores">
-                                <div>
-                                    <Users />
-                                    <span>Moradores</span>
                                 </div>
                             </SidebarMenuButton>
                         </Link>

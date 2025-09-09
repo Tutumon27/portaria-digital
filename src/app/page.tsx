@@ -24,7 +24,7 @@ const MOCK_DELIVERIES: Delivery[] = [
   },
   {
     id: '2',
-    apartment: '504',
+    apartment: '202',
     block: '2',
     residentName: 'Maria Oliveira',
     description: 'Mercado Livre - Eletrônicos',
@@ -54,39 +54,47 @@ const MOCK_RESIDENTS: Resident[] = [
 
 
 export default function Home() {
-  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
-  const [residents, setResidents] = useState<Resident[]>([]);
+  const [deliveries, setDeliveries] = useState<Delivery[]>(MOCK_DELIVERIES);
+  const [residents, setResidents] = useState<Resident[]>(MOCK_RESIDENTS);
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [editingDelivery, setEditingDelivery] = useState<Delivery | null>(null);
   const { toast } = useToast();
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    const storedDeliveries = localStorage.getItem('deliveries');
-    if (storedDeliveries) {
-      setDeliveries(JSON.parse(storedDeliveries));
-    } else {
-      setDeliveries(MOCK_DELIVERIES);
-    }
+    setIsClient(true);
+    try {
+      const storedDeliveries = localStorage.getItem('deliveries');
+      if (storedDeliveries) {
+        setDeliveries(JSON.parse(storedDeliveries));
+      } else {
+        setDeliveries(MOCK_DELIVERIES);
+      }
 
-    const storedResidents = localStorage.getItem('residents');
-    if (storedResidents) {
-      setResidents(JSON.parse(storedResidents));
-    } else {
-      setResidents(MOCK_RESIDENTS);
+      const storedResidents = localStorage.getItem('residents');
+      if (storedResidents) {
+        setResidents(JSON.parse(storedResidents));
+      } else {
+        setResidents(MOCK_RESIDENTS);
+      }
+    } catch (error) {
+        console.error("Failed to parse from localStorage", error);
+        setDeliveries(MOCK_DELIVERIES);
+        setResidents(MOCK_RESIDENTS);
     }
   }, []);
 
   useEffect(() => {
-    if (deliveries.length > 0) {
-      localStorage.setItem('deliveries', JSON.stringify(deliveries));
+    if(isClient) {
+        localStorage.setItem('deliveries', JSON.stringify(deliveries));
     }
-  }, [deliveries]);
+  }, [deliveries, isClient]);
 
   useEffect(() => {
-    if (residents.length > 0) {
-      localStorage.setItem('residents', JSON.stringify(residents));
+    if(isClient) {
+        localStorage.setItem('residents', JSON.stringify(residents));
     }
-  }, [residents]);
+  }, [residents, isClient]);
 
 
   const handleAddClick = () => {
@@ -138,6 +146,10 @@ export default function Home() {
     ));
     toast({ title: "Entrega confirmada!", description: `A encomenda foi marcada como entregue.` });
   };
+
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <main className="min-h-screen bg-background text-foreground">

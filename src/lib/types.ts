@@ -1,3 +1,4 @@
+
 export type Delivery = {
   id: string;
   apartment: string;
