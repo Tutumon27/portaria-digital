@@ -16,7 +16,7 @@ export type Resident = {
   name: string;
   apartment: string;
   block: '1' | '2' | '3';
-  document: string;
+  document?: string;
   phone: string;
 }
 

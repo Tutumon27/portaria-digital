@@ -36,7 +36,7 @@ const residentSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório."),
   apartment: z.string().min(1, "Apartamento é obrigatório."),
   block: z.enum(BLOCKS, { required_error: "Bloco é obrigatório." }),
-  document: z.string().min(1, "Documento é obrigatório."),
+  document: z.string().optional(),
   phone: z.string().min(1, "Telefone é obrigatório."),
 });
 
