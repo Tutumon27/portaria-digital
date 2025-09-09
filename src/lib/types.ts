@@ -17,7 +17,7 @@ export type Resident = {
   apartment: string;
   block: '1' | '2' | '3';
   document?: string;
-  phone: string;
+  phone?: string;
 }
 
 export type DeliveryStatusFilter = 'all' | 'PENDENTE' | 'ENTREGUE';

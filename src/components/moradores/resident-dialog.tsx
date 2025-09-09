@@ -37,7 +37,7 @@ const residentSchema = z.object({
   apartment: z.string().min(1, "Apartamento é obrigatório."),
   block: z.enum(BLOCKS, { required_error: "Bloco é obrigatório." }),
   document: z.string().optional(),
-  phone: z.string().min(1, "Telefone é obrigatório."),
+  phone: z.string().optional(),
 });
 
 type ResidentFormData = z.infer<typeof residentSchema>;
