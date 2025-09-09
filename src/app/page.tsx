@@ -107,7 +107,11 @@ export default function Home() {
   };
 
   const handleExportClick = () => {
-    exportToCsv(deliveries, 'entregas.csv');
+    const now = new Date();
+    const formattedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const formattedTime = `${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
+    const filename = `entregas_${formattedDate}_${formattedTime}.csv`;
+    exportToCsv(deliveries, filename);
   };
 
   const handleSubmit = (data: Omit<Delivery, 'id' | 'createdAt' | 'status'>, photo?: File) => {
