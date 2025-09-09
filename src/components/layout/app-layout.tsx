@@ -24,10 +24,12 @@ function AppSidebar() {
     return (
         <Sidebar collapsible="icon">
             <SidebarHeader>
-                <div className="flex items-center gap-2 p-2">
-                    <Package className="w-8 h-8 text-primary" />
-                    {state === 'expanded' && <h1 className="text-xl font-bold text-primary">Portaria Digital</h1>}
-                </div>
+                <Link href="/" className="block">
+                    <div className="flex items-center gap-2 p-2">
+                        <Package className="w-8 h-8 text-primary" />
+                        {state === 'expanded' && <h1 className="text-xl font-bold text-primary">Portaria Digital</h1>}
+                    </div>
+                </Link>
             </SidebarHeader>
             <SidebarContent>
                 <SidebarMenu>
