@@ -32,16 +32,6 @@ function AppSidebar() {
             </SidebarHeader>
             <SidebarContent>
                 <SidebarMenu>
-                    <SidebarMenuItem>
-                        <Link href="/" passHref>
-                            <SidebarMenuButton asChild isActive={pathname === '/'} tooltip="Entregas">
-                                <div>
-                                    <Home />
-                                    <span>Entregas</span>
-                                </div>
-                            </SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarContent>
         </Sidebar>
