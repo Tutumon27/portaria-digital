@@ -77,9 +77,13 @@ export function DeliveryDialog({
   const [newResidentInitialData, setNewResidentInitialData] = useState<Partial<Resident> | null>(null);
 
   const fetchResidents = () => {
-    const storedResidents = localStorage.getItem('residents');
-    if (storedResidents) {
-      setResidents(JSON.parse(storedResidents));
+    try {
+      const storedResidents = localStorage.getItem('residents');
+      if (storedResidents) {
+        setResidents(JSON.parse(storedResidents));
+      }
+    } catch (error) {
+      console.error("Failed to parse residents from localStorage", error);
     }
   }
 

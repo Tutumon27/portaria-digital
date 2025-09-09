@@ -57,6 +57,13 @@ export function ResidentDialog({
 }: ResidentDialogProps) {
   const form = useForm<ResidentFormData>({
     resolver: zodResolver(residentSchema),
+    defaultValues: {
+      name: "",
+      apartment: "",
+      block: undefined,
+      document: "",
+      phone: "",
+    }
   });
 
   useEffect(() => {
@@ -85,7 +92,7 @@ export function ResidentDialog({
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle>
-            {initialData?.id ? "Editar Morador" : "Adicionar Morador"}
+            {initialData ? "Editar Morador" : "Adicionar Morador"}
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -128,7 +135,6 @@ export function ResidentDialog({
                     <FormLabel>Bloco</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
                       value={field.value}
                     >
                       <FormControl>

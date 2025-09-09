@@ -46,13 +46,14 @@ export function ResidentTable({
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const filteredResidents = useMemo(() => {
+    const query = searchQuery.toLowerCase();
     return residents
       .filter(
         (r) =>
-          searchQuery === "" ||
-          r.apartment.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          r.document.toLowerCase().includes(searchQuery.toLowerCase())
+          query === "" ||
+          r.apartment.toLowerCase().includes(query) ||
+          r.name.toLowerCase().includes(query) ||
+          (r.document && r.document.toLowerCase().includes(query))
       ).sort((a, b) => a.name.localeCompare(b.name));
   }, [residents, searchQuery]);
 
@@ -103,7 +104,7 @@ export function ResidentTable({
                           Editar
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          className="text-red-500 hover:!text-red-500"
+                          className="text-red-500 hover:!text-red-500 focus:text-red-500"
                           onClick={() => setDeletingId(resident.id)}
                         >
                           Excluir
@@ -135,7 +136,7 @@ export function ResidentTable({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {
                 if (deletingId) onDelete(deletingId);
                 setDeletingId(null);

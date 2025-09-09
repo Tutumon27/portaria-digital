@@ -24,16 +24,21 @@ export default function MoradoresPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const storedResidents = localStorage.getItem('residents');
-    if (storedResidents) {
-      setResidents(JSON.parse(storedResidents));
-    } else {
+    try {
+      const storedResidents = localStorage.getItem('residents');
+      if (storedResidents) {
+        setResidents(JSON.parse(storedResidents));
+      } else {
+        setResidents(MOCK_RESIDENTS);
+      }
+    } catch (error) {
+      console.error("Failed to parse residents from localStorage", error);
       setResidents(MOCK_RESIDENTS);
     }
   }, []);
 
   useEffect(() => {
-    if(residents.length > 0){
+    if (residents.length > 0) {
       localStorage.setItem('residents', JSON.stringify(residents));
     }
   }, [residents]);
@@ -47,7 +52,7 @@ export default function MoradoresPage() {
     setEditingResident(resident);
     setDialogOpen(true);
   };
-  
+
   const handleExportClick = () => {
     exportToCsv(residents, 'moradores.csv');
   };

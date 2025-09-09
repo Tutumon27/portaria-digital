@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import {
@@ -34,18 +33,22 @@ function AppSidebar() {
             <SidebarContent>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <Link href="/">
-                            <SidebarMenuButton isActive={pathname === '/'} tooltip="Entregas">
-                                <Home />
-                                <span>Entregas</span>
+                        <Link href="/" passHref>
+                            <SidebarMenuButton asChild isActive={pathname === '/'} tooltip="Entregas">
+                                <div>
+                                    <Home />
+                                    <span>Entregas</span>
+                                </div>
                             </SidebarMenuButton>
                         </Link>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
-                         <Link href="/moradores">
-                            <SidebarMenuButton isActive={pathname === '/moradores'} tooltip="Moradores">
-                                <Users />
-                                <span>Moradores</span>
+                         <Link href="/moradores" passHref>
+                            <SidebarMenuButton asChild isActive={pathname === '/moradores'} tooltip="Moradores">
+                                <div>
+                                    <Users />
+                                    <span>Moradores</span>
+                                </div>
                             </SidebarMenuButton>
                         </Link>
                     </SidebarMenuItem>
