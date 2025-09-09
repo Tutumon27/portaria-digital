@@ -32,24 +32,20 @@ function AppSidebar() {
             <SidebarContent>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <Link href="/" legacyBehavior passHref>
-                            <SidebarMenuButton asChild isActive={pathname === '/'} tooltip="Entregas">
-                                <a>
-                                    <Home />
-                                    <span>Entregas</span>
-                                </a>
-                            </SidebarMenuButton>
-                        </Link>
+                        <SidebarMenuButton asChild isActive={pathname === '/'} tooltip="Entregas">
+                            <Link href="/">
+                                <Home />
+                                <span>Entregas</span>
+                            </Link>
+                        </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
-                        <Link href="/moradores" legacyBehavior passHref>
-                            <SidebarMenuButton asChild isActive={pathname === '/moradores'} tooltip="Moradores">
-                                <a>
-                                    <Users />
-                                    <span>Moradores</span>
-                                </a>
-                            </SidebarMenuButton>
-                        </Link>
+                        <SidebarMenuButton asChild isActive={pathname === '/moradores'} tooltip="Moradores">
+                            <Link href="/moradores">
+                                <Users />
+                                <span>Moradores</span>
+                            </Link>
+                        </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarContent>
