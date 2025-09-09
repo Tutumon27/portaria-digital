@@ -22,7 +22,7 @@ function AppSidebar() {
     const { state } = useSidebar();
 
     return (
-        <Sidebar collapsible="icon">
+        <Sidebar>
             <SidebarHeader>
                 <Link href="/" className="block">
                     <div className="flex items-center gap-2 p-2">
