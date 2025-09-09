@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -15,6 +16,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
@@ -36,14 +38,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Search } from "lucide-react";
+import { MoreHorizontal, Search, MessageSquare } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import type { Delivery, DeliveryStatusFilter } from "@/lib/types";
+import type { Delivery, DeliveryStatusFilter, Resident } from "@/lib/types";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 
 type DeliveryTableProps = {
   deliveries: Delivery[];
+  residents: Resident[];
   onEdit: (delivery: Delivery) => void;
   onDelete: (id: string) => void;
   onUpdateStatus: (id: string, pickupBy: string) => void;
@@ -51,6 +55,7 @@ type DeliveryTableProps = {
 
 export function DeliveryTable({
   deliveries,
+  residents,
   onEdit,
   onDelete,
   onUpdateStatus,
@@ -61,6 +66,7 @@ export function DeliveryTable({
   const [updatingDelivery, setUpdatingDelivery] = useState<Delivery | null>(null);
   const [pickupByName, setPickupByName] = useState("");
   const [previewingImage, setPreviewingImage] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const filteredDeliveries = useMemo(() => {
     return deliveries
@@ -81,6 +87,24 @@ export function DeliveryTable({
       setPickupByName("");
     }
   };
+
+  const handleWhatsAppMessage = (delivery: Delivery) => {
+    const resident = residents.find(r => r.name === delivery.residentName);
+    if (!resident || !resident.phone) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao enviar mensagem",
+        description: "O morador não possui um número de telefone cadastrado.",
+      });
+      return;
+    }
+
+    const phone = resident.phone.replace(/\D/g, "");
+    const message = `Olá, ${resident.name}! Uma encomenda chegou para você na portaria: ${delivery.description}.`;
+    const whatsappUrl = `https://wa.me/55${phone}?text=${encodeURIComponent(message)}`;
+
+    window.open(whatsappUrl, "_blank");
+  }
 
   return (
     <div className="space-y-4">
@@ -157,6 +181,12 @@ export function DeliveryTable({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                         {delivery.status === 'PENDENTE' && (
+                           <DropdownMenuItem onClick={() => handleWhatsAppMessage(delivery)}>
+                             <MessageSquare className="mr-2 h-4 w-4"/>
+                             Notificar por WhatsApp
+                           </DropdownMenuItem>
+                         )}
                         <DropdownMenuItem onClick={() => onEdit(delivery)}>
                           Editar
                         </DropdownMenuItem>
@@ -165,6 +195,7 @@ export function DeliveryTable({
                             Marcar como Entregue
                           </DropdownMenuItem>
                         )}
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-red-500 hover:!text-red-500"
                           onClick={() => setDeletingId(delivery.id)}

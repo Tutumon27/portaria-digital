@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import type { Delivery } from "@/lib/types";
+import type { Delivery, Resident } from "@/lib/types";
 import { PageHeader } from "@/components/layout/page-header";
 import { DeliveryTable } from "@/components/portaria/delivery-table";
 import { DeliveryDialog } from "@/components/portaria/delivery-dialog";
@@ -36,7 +36,7 @@ const MOCK_DELIVERIES: Delivery[] = [
   },
   {
     id: '3',
-    apartment: '1202',
+    apartment: '303',
     block: '3',
     residentName: 'Pedro Santos',
     description: 'Magazine Luiza - Fone de ouvido',
@@ -46,12 +46,23 @@ const MOCK_DELIVERIES: Delivery[] = [
   }
 ];
 
+const MOCK_RESIDENTS: Resident[] = [
+  { id: '1', name: 'João da Silva', apartment: '101', block: '1', document: '123.456.789-00', phone: '11987654321' },
+  { id: '2', name: 'Maria Oliveira', apartment: '202', block: '2', document: '234.567.890-11', phone: '21912345678' },
+  { id: '3', name: 'Pedro Santos', apartment: '303', block: '3', document: '345.678.901-22', phone: '31955554444' },
+];
+
 
 export default function Home() {
   const [deliveries, setDeliveries] = useState<Delivery[]>(() => {
     if (typeof window === 'undefined') return [];
     const storedDeliveries = localStorage.getItem('deliveries');
     return storedDeliveries ? JSON.parse(storedDeliveries) : MOCK_DELIVERIES;
+  });
+  const [residents, setResidents] = useState<Resident[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const storedResidents = localStorage.getItem('residents');
+    return storedResidents ? JSON.parse(storedResidents) : MOCK_RESIDENTS;
   });
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [editingDelivery, setEditingDelivery] = useState<Delivery | null>(null);
@@ -60,6 +71,11 @@ export default function Home() {
   useEffect(() => {
     localStorage.setItem('deliveries', JSON.stringify(deliveries));
   }, [deliveries]);
+
+  useEffect(() => {
+    localStorage.setItem('residents', JSON.stringify(residents));
+  }, [residents]);
+
 
   const handleAddClick = () => {
     setEditingDelivery(null);
@@ -126,6 +142,7 @@ export default function Home() {
       <div className="p-4 md:p-6">
         <DeliveryTable
           deliveries={deliveries}
+          residents={residents}
           onEdit={handleEditClick}
           onDelete={handleDelete}
           onUpdateStatus={handleUpdateStatus}
