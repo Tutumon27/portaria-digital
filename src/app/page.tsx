@@ -179,6 +179,7 @@ export default function Home() {
         onOpenChange={setDialogOpen}
         onSubmit={handleSubmit}
         initialData={editingDelivery}
+        residents={residents}
       />
     </div>
   );

@@ -30,10 +30,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { BLOCKS, type Delivery, type Resident } from "@/lib/types";
 import { useRef, useState, useEffect } from "react";
-import { Camera, Upload, X } from "lucide-react";
+import { Camera, Upload, X, Check, ChevronsUpDown } from "lucide-react";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 const deliverySchema = z.object({
   residentName: z.string().min(1, "Nome do morador é obrigatório."),
@@ -49,6 +62,7 @@ type DeliveryDialogProps = {
   onOpenChange: (isOpen: boolean) => void;
   onSubmit: (data: DeliveryFormData, photo?: File) => void;
   initialData?: Delivery | null;
+  residents: Resident[];
 };
 
 export function DeliveryDialog({
@@ -56,6 +70,7 @@ export function DeliveryDialog({
   onOpenChange,
   onSubmit,
   initialData,
+  residents,
 }: DeliveryDialogProps) {
   const form = useForm<DeliveryFormData>({
     resolver: zodResolver(deliverySchema),
@@ -64,6 +79,7 @@ export function DeliveryDialog({
   const photoInputRef = useRef<HTMLInputElement>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [popoverOpen, setPopoverOpen] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -123,11 +139,59 @@ export function DeliveryDialog({
                 control={form.control}
                 name="residentName"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Nome do Morador</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: João da Silva" {...field} />
-                    </FormControl>
+                    <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "w-full justify-between",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value
+                              ? residents.find(
+                                  (r) => r.name === field.value
+                                )?.name
+                              : "Selecione o morador"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[440px] p-0">
+                        <Command>
+                          <CommandInput placeholder="Procurar morador..." />
+                          <CommandEmpty>Nenhum morador encontrado.</CommandEmpty>
+                          <CommandGroup>
+                            {residents.map((resident) => (
+                              <CommandItem
+                                value={resident.name}
+                                key={resident.id}
+                                onSelect={() => {
+                                  form.setValue("residentName", resident.name);
+                                  form.setValue("apartment", resident.apartment);
+                                  form.setValue("block", resident.block);
+                                  setPopoverOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    resident.name === field.value
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                {resident.name} ({resident.apartment}/{resident.block})
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -140,7 +204,7 @@ export function DeliveryDialog({
                     <FormItem>
                       <FormLabel>Apartamento</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: 101" {...field} />
+                        <Input placeholder="Ex: 101" {...field} readOnly/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -152,23 +216,7 @@ export function DeliveryDialog({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Bloco</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {BLOCKS.map((block) => (
-                            <SelectItem key={block} value={block}>
-                              Bloco {block}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                       <Input placeholder="Ex: 1" {...field} readOnly />
                       <FormMessage />
                     </FormItem>
                   )}
