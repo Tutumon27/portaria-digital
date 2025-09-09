@@ -2,6 +2,7 @@
 "use client";
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 type PageHeaderProps = {
   title: string;
@@ -15,7 +16,10 @@ export function PageHeader({ title, children }: PageHeaderProps) {
         <SidebarTrigger className="md:hidden" />
         <h1 className="text-xl md:text-2xl font-bold">{title}</h1>
       </div>
-      {children && <div className="flex items-center gap-2">{children}</div>}
+      <div className="flex items-center gap-2">
+        {children}
+        <ThemeToggle />
+      </div>
     </header>
   );
 }
