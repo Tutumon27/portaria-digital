@@ -8,7 +8,7 @@ import { DeliveryTable } from "@/components/portaria/delivery-table";
 import { DeliveryDialog } from "@/components/portaria/delivery-dialog";
 import { exportToPdfForDelivery, exportToCsvFullData, isDelivery } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Download, PlusCircle, Upload, FileDown, FileText } from 'lucide-react';
+import { Upload, PlusCircle, FileText, FileDown } from 'lucide-react';
 import Papa from 'papaparse';
 
 const MOCK_DELIVERIES: Delivery[] = [
@@ -20,7 +20,7 @@ const MOCK_DELIVERIES: Delivery[] = [
     description: 'Pacote Amazon - Livros',
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     status: 'PENDENTE',
-    photoUrl: 'https://picsum.photos/400/300?random=1',
+    photoUrl: 'https://picsum.photos/seed/1/400/300',
   },
   {
     id: '2',
@@ -32,7 +32,7 @@ const MOCK_DELIVERIES: Delivery[] = [
     status: 'ENTREGUE',
     deliveredAt: new Date().toISOString(),
     retiradoPor: 'Maria Silva',
-    photoUrl: 'https://picsum.photos/400/300?random=2',
+    photoUrl: 'https://picsum.photos/seed/2/400/300',
   },
   {
     id: '3',
@@ -42,7 +42,7 @@ const MOCK_DELIVERIES: Delivery[] = [
     description: 'Magazine Luiza - Fone de ouvido',
     createdAt: new Date().toISOString(),
     status: 'PENDENTE',
-    photoUrl: 'https://picsum.photos/400/300?random=3',
+    photoUrl: 'https://picsum.photos/seed/3/400/300',
   }
 ];
 
@@ -268,15 +268,13 @@ export default function Home() {
     toast({ title: "Entrega confirmada!", description: `A encomenda foi marcada como entregue.` });
   };
 
-  const handleAddResident = (name: string) => {
+  const handleAddResident = (residentData: Omit<Resident, 'id'>) => {
     const newResident: Resident = {
       id: new Date().getTime().toString(),
-      name,
-      apartment: '',
-      block: '1', 
+      ...residentData
     };
-    setResidents(prev => [...prev, newResident]);
-    toast({ title: "Morador adicionado!", description: `${name} foi adicionado(a). Preencha o resto dos detalhes.` });
+    setResidents(prev => [newResident, ...prev]);
+    toast({ title: "Morador adicionado!", description: `${newResident.name} foi adicionado(a).` });
     return newResident;
   };
 
@@ -334,3 +332,6 @@ export default function Home() {
     </div>
   );
 }
+
+
+    

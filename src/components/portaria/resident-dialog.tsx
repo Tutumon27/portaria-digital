@@ -46,7 +46,8 @@ type ResidentDialogProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onSubmit: (data: ResidentFormData) => void;
-  initialData?: Resident | null;
+  initialData?: Partial<Resident> | null;
+  isSubmitting?: boolean;
 };
 
 export function ResidentDialog({
@@ -54,6 +55,7 @@ export function ResidentDialog({
   onOpenChange,
   onSubmit,
   initialData,
+  isSubmitting = false,
 }: ResidentDialogProps) {
   const form = useForm<ResidentFormData>({
     resolver: zodResolver(residentSchema),
@@ -61,7 +63,13 @@ export function ResidentDialog({
 
   useEffect(() => {
     if (initialData) {
-      form.reset(initialData);
+      form.reset({
+          name: initialData.name || '',
+          apartment: initialData.apartment || '',
+          block: initialData.block || undefined,
+          document: initialData.document || '',
+          phone: initialData.phone || '',
+      });
     } else {
       form.reset({ name: "", apartment: "", block: undefined, document: "", phone: "" });
     }
@@ -77,7 +85,7 @@ export function ResidentDialog({
         <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
             <DialogTitle>
-              {initialData ? "Editar Morador" : "Adicionar Morador"}
+              {initialData && initialData.id ? "Editar Morador" : "Adicionar Morador"}
             </DialogTitle>
           </DialogHeader>
           <Form {...form}>
@@ -172,7 +180,9 @@ export function ResidentDialog({
                     Cancelar
                   </Button>
                 </DialogClose>
-                <Button type="submit">Salvar</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Salvando...' : 'Salvar'}
+                </Button>
               </DialogFooter>
             </form>
           </Form>
@@ -180,3 +190,5 @@ export function ResidentDialog({
       </Dialog>
   );
 }
+
+    
