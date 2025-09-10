@@ -119,7 +119,7 @@ export function DeliveryDialog({
   const triggerPhotoInput = (capture: boolean) => {
     if (photoInputRef.current) {
         if(capture) {
-            photoInputRef.current.setAttribute('capture', 'environment');
+            photoInputRef.current.setAttribute('capture', 'user');
         } else {
             photoInputRef.current.removeAttribute('capture');
         }
@@ -190,7 +190,7 @@ export function DeliveryDialog({
                            />
                           <CommandList>
                             <CommandEmpty>
-                              {searchQuery && (
+                              {searchQuery ? (
                                 <div
                                   onClick={() => handleAddNewResident(searchQuery)}
                                   className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled='true']:pointer-events-none data-[disabled='true']:opacity-50"
@@ -198,8 +198,7 @@ export function DeliveryDialog({
                                   <UserPlus className="mr-2 h-4 w-4" />
                                   Cadastrar "{searchQuery}"
                                 </div>
-                              )}
-                              {!searchQuery && "Nenhum morador encontrado."}
+                              ) : "Nenhum morador encontrado."}
                             </CommandEmpty>
                             <CommandGroup>
                               {filteredResidents.map((resident) => (
