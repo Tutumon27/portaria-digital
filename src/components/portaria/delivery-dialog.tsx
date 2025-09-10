@@ -45,9 +45,12 @@ import {
 } from "@/components/ui/popover";
 import { BLOCKS, type Delivery, type Resident } from "@/lib/types";
 import { useRef, useState, useEffect } from "react";
-import { Camera, Upload, X, Check, ChevronsUpDown, UserPlus } from "lucide-react";
+import { Camera, Upload, X, Check, ChevronsUpDown, UserPlus, Video, VideoOff } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 
 const deliverySchema = z.object({
   residentName: z.string().min(1, "Nome do morador é obrigatório."),
@@ -79,11 +82,19 @@ export function DeliveryDialog({
     resolver: zodResolver(deliverySchema),
   });
   
+  const { toast } = useToast();
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const [showCamera, setShowCamera] = useState(false);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+
 
   useEffect(() => {
     if (initialData) {
@@ -101,7 +112,46 @@ export function DeliveryDialog({
       setPhotoFile(null);
     }
     setSearchQuery("");
+    setShowCamera(false);
   }, [initialData, isOpen, form]);
+
+  useEffect(() => {
+    const cleanupCamera = () => {
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+        videoRef.current.srcObject = null;
+      }
+    };
+  
+    if (isOpen && showCamera) {
+      const getCameraPermission = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          setHasCameraPermission(true);
+  
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+        } catch (error) {
+          console.error('Error accessing camera:', error);
+          setHasCameraPermission(false);
+          toast({
+            variant: 'destructive',
+            title: 'Acesso à câmera negado',
+            description: 'Por favor, habilite a permissão da câmera no seu navegador.',
+          });
+        }
+      };
+  
+      getCameraPermission();
+    } else {
+      cleanupCamera();
+    }
+  
+    return cleanupCamera;
+  }, [isOpen, showCamera, toast]);
+
 
   const handleFormSubmit = (data: DeliveryFormData) => {
     onSubmit(data, photoFile || undefined);
@@ -113,17 +163,34 @@ export function DeliveryDialog({
     if (file) {
       setPhotoFile(file);
       setPhotoPreview(URL.createObjectURL(file));
+      setShowCamera(false);
     }
   };
   
-  const triggerPhotoInput = (capture: boolean) => {
+  const triggerPhotoInput = () => {
     if (photoInputRef.current) {
-        if(capture) {
-            photoInputRef.current.setAttribute('capture', 'user');
-        } else {
-            photoInputRef.current.removeAttribute('capture');
-        }
+        photoInputRef.current.removeAttribute('capture');
         photoInputRef.current.click();
+    }
+  };
+
+  const handleCapturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const context = canvas.getContext('2d');
+      context?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+      
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
+          setPhotoFile(file);
+          setPhotoPreview(URL.createObjectURL(file));
+        }
+        setShowCamera(false);
+      }, 'image/jpeg');
     }
   };
 
@@ -293,24 +360,50 @@ export function DeliveryDialog({
               />
               <FormItem>
                 <FormLabel>Foto</FormLabel>
-                <div className="flex items-center gap-2">
-                   <Button type="button" variant="outline" onClick={() => triggerPhotoInput(false)}>
-                      <Upload className="mr-2 h-4 w-4" /> Fazer Upload
-                  </Button>
-                  <Button type="button" variant="outline" onClick={() => triggerPhotoInput(true)}>
-                      <Camera className="mr-2 h-4 w-4" /> Tirar Foto
-                  </Button>
-                  <Input type="file" accept="image/*" ref={photoInputRef} onChange={handlePhotoChange} className="hidden" />
-                </div>
-                {photoPreview && (
-                  <div className="mt-4 relative w-32 h-24">
-                    <Image src={photoPreview} alt="Pré-visualização" layout="fill" objectFit="cover" className="rounded-md" />
-                    <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={() => { setPhotoFile(null); setPhotoPreview(null)}}>
-                      <X className="h-4 w-4"/>
-                    </Button>
+                 {showCamera ? (
+                  <div className="space-y-2">
+                    <video ref={videoRef} className="w-full aspect-video rounded-md bg-muted" autoPlay muted playsInline />
+                    {hasCameraPermission === false && (
+                      <Alert variant="destructive">
+                        <AlertTitle>Acesso à Câmera Necessário</AlertTitle>
+                        <AlertDescription>
+                          Por favor, permita o acesso à câmera para usar este recurso.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                     <div className="flex items-center gap-2">
+                        <Button type="button" onClick={handleCapturePhoto} disabled={!hasCameraPermission}>
+                          <Camera className="mr-2 h-4 w-4" /> Capturar Foto
+                        </Button>
+                        <Button type="button" variant="secondary" onClick={() => setShowCamera(false)}>
+                            <VideoOff className="mr-2 h-4 w-4"/> Fechar Câmera
+                        </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Button type="button" variant="outline" onClick={triggerPhotoInput}>
+                        <Upload className="mr-2 h-4 w-4" /> Fazer Upload
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => setShowCamera(true)}>
+                        <Video className="mr-2 h-4 w-4" /> Abrir Câmera
+                      </Button>
+                    </div>
+                    {photoPreview && (
+                      <div className="mt-2 relative w-32 h-24">
+                        <Image src={photoPreview} alt="Pré-visualização" layout="fill" objectFit="cover" className="rounded-md" />
+                        <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={() => { setPhotoFile(null); setPhotoPreview(null); }}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
+                 <Input type="file" accept="image/*" ref={photoInputRef} onChange={handlePhotoChange} className="hidden" />
+                 <canvas ref={canvasRef} className="hidden"></canvas>
               </FormItem>
+
               <DialogFooter>
                 <DialogClose asChild>
                   <Button type="button" variant="secondary">
@@ -325,3 +418,5 @@ export function DeliveryDialog({
       </Dialog>
   );
 }
+
+    
