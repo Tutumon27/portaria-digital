@@ -2,22 +2,26 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import type { Delivery, Resident } from "@/lib/types";
+import { format } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
 function downloadCsv(csvContent: string, filename: string) {
-  const encodedUri = encodeURI(csvContent);
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
   link.setAttribute("download", filename);
+  link.style.visibility = 'hidden';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 }
 
-export function exportToCsv(data: Delivery[], filename: string) {
+
+export function exportToCsvForDelivery(data: Delivery[], filename: string) {
   const pendingDeliveries = data.filter(d => d.status === 'PENDENTE');
 
   if (pendingDeliveries.length === 0) {
@@ -60,10 +64,46 @@ export function exportToCsv(data: Delivery[], filename: string) {
   }
 
   const csvRows = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
-  const csvContent = "data:text/csv;charset=utf-8," + csvRows;
   
+  downloadCsv(csvRows, filename);
+}
+
+export function exportToCsvFullData(data: Delivery[], filename: string) {
+  if (data.length === 0) {
+    alert("Não há dados para exportar.");
+    return;
+  }
+
+  const headers = [
+    'ID',
+    'Morador',
+    'Apartamento',
+    'Bloco',
+    'Descrição',
+    'Status',
+    'Data de Criação',
+    'Data de Entrega',
+    'Retirado Por',
+    'URL da Foto'
+  ];
+
+  const rows = data.map(d => [
+    `"${d.id}"`,
+    `"${d.residentName}"`,
+    `"${d.apartment}"`,
+    `"${d.block}"`,
+    `"${d.description.replace(/"/g, '""')}"`, // Escape double quotes
+    `"${d.status}"`,
+    `"${format(new Date(d.createdAt), 'yyyy-MM-dd HH:mm:ss')}"`,
+    d.deliveredAt ? `"${format(new Date(d.deliveredAt), 'yyyy-MM-dd HH:mm:ss')}"` : '""',
+    `"${d.retiradoPor || ''}"`,
+    `"${d.photoUrl || ''}"`
+  ].join(','));
+
+  const csvContent = [headers.join(','), ...rows].join('\n');
   downloadCsv(csvContent, filename);
 }
+
 
 // Type guard to check if an object is a valid Delivery
 export function isDelivery(obj: any): obj is Delivery {

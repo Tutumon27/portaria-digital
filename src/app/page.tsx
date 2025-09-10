@@ -6,9 +6,9 @@ import { useToast } from "@/hooks/use-toast";
 import type { Delivery, Resident } from "@/lib/types";
 import { DeliveryTable } from "@/components/portaria/delivery-table";
 import { DeliveryDialog } from "@/components/portaria/delivery-dialog";
-import { exportToCsv, isDelivery } from '@/lib/utils';
+import { exportToCsvForDelivery, exportToCsvFullData, isDelivery } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Download, PlusCircle, Upload } from 'lucide-react';
+import { Download, PlusCircle, Upload, FileDown } from 'lucide-react';
 import Papa from 'papaparse';
 
 const MOCK_DELIVERIES: Delivery[] = [
@@ -216,13 +216,21 @@ export default function Home() {
   };
 
 
-  const handleExportClick = () => {
+  const handleExportForDeliveryClick = () => {
+    const now = new Date();
+    const formattedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const filename = `relatorio_entregas_${formattedDate}.csv`;
+    exportToCsvForDelivery(deliveries, filename);
+  };
+  
+  const handleExportFullDataClick = () => {
     const now = new Date();
     const formattedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const formattedTime = `${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
-    const filename = `entregas_${formattedDate}_${formattedTime}.csv`;
-    exportToCsv(deliveries, filename);
+    const filename = `export_dados_completos_${formattedDate}_${formattedTime}.csv`;
+    exportToCsvFullData(deliveries, filename);
   };
+
 
   const handleSubmit = (data: Omit<Delivery, 'id' | 'createdAt' | 'status'>, photo?: File) => {
     const photoUrl = photo ? URL.createObjectURL(photo) : (editingDelivery?.photoUrl || undefined);
@@ -296,9 +304,13 @@ export default function Home() {
             accept=".csv"
             className="hidden"
           />
-          <Button onClick={handleExportClick} variant="secondary">
+          <Button onClick={handleExportForDeliveryClick} variant="secondary">
             <Download />
-            Exportar
+            Exportar para Entrega
+          </Button>
+           <Button onClick={handleExportFullDataClick} variant="secondary">
+            <FileDown />
+            Exportar Dados
           </Button>
         </div>
       </div>
