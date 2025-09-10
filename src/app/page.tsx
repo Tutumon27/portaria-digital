@@ -6,9 +6,9 @@ import { useToast } from "@/hooks/use-toast";
 import type { Delivery, Resident } from "@/lib/types";
 import { DeliveryTable } from "@/components/portaria/delivery-table";
 import { DeliveryDialog } from "@/components/portaria/delivery-dialog";
-import { exportToCsvForDelivery, exportToCsvFullData, isDelivery } from '@/lib/utils';
+import { exportToPdfForDelivery, exportToCsvFullData, isDelivery } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Download, PlusCircle, Upload, FileDown } from 'lucide-react';
+import { Download, PlusCircle, Upload, FileDown, FileText } from 'lucide-react';
 import Papa from 'papaparse';
 
 const MOCK_DELIVERIES: Delivery[] = [
@@ -219,8 +219,8 @@ export default function Home() {
   const handleExportForDeliveryClick = () => {
     const now = new Date();
     const formattedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    const filename = `relatorio_entregas_${formattedDate}.csv`;
-    exportToCsvForDelivery(deliveries, filename);
+    const filename = `relatorio_entregas_${formattedDate}.pdf`;
+    exportToPdfForDelivery(deliveries, filename);
   };
   
   const handleExportFullDataClick = () => {
@@ -305,12 +305,12 @@ export default function Home() {
             className="hidden"
           />
           <Button onClick={handleExportForDeliveryClick} variant="secondary">
-            <Download />
-            Exportar para Entrega
+            <FileText />
+            Exportar PDF para Entrega
           </Button>
            <Button onClick={handleExportFullDataClick} variant="secondary">
             <FileDown />
-            Exportar Dados
+            Exportar Dados (CSV)
           </Button>
         </div>
       </div>

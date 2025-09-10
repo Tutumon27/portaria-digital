@@ -3,6 +3,8 @@ import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import type { Delivery, Resident } from "@/lib/types";
 import { format } from "date-fns";
+import jsPDF from "jspdf";
+import autoTable from 'jspdf-autotable';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -21,13 +23,15 @@ function downloadCsv(csvContent: string, filename: string) {
 }
 
 
-export function exportToCsvForDelivery(data: Delivery[], filename: string) {
+export function exportToPdfForDelivery(data: Delivery[], filename: string) {
   const pendingDeliveries = data.filter(d => d.status === 'PENDENTE');
 
   if (pendingDeliveries.length === 0) {
     alert("Não há encomendas pendentes para exportar.");
     return;
   }
+  
+  const doc = new jsPDF();
 
   const deliveriesByBlock: { [key: string]: string[] } = {
     '1': [],
@@ -51,21 +55,26 @@ export function exportToCsvForDelivery(data: Delivery[], filename: string) {
     deliveriesByBlock['2'].length,
     deliveriesByBlock['3'].length
   );
-
-  const headers = ['Bloco 1', 'Bloco 2', 'Bloco 3'];
-  const rows: string[][] = [];
-
+  
+  const body = [];
   for (let i = 0; i < maxRows; i++) {
-    rows.push([
+    body.push([
       deliveriesByBlock['1'][i] || '',
       deliveriesByBlock['2'][i] || '',
       deliveriesByBlock['3'][i] || '',
     ]);
   }
 
-  const csvRows = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
-  
-  downloadCsv(csvRows, filename);
+  autoTable(doc, {
+    head: [['Bloco 1', 'Bloco 2', 'Bloco 3']],
+    body: body,
+    didDrawPage: function (data) {
+      doc.setFontSize(18);
+      doc.text('Relatório de Entregas Pendentes', data.settings.margin.left, 15);
+    },
+  });
+
+  doc.save(filename);
 }
 
 export function exportToCsvFullData(data: Delivery[], filename: string) {
