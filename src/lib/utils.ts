@@ -18,26 +18,46 @@ function downloadCsv(csvContent: string, filename: string) {
 }
 
 export function exportToCsv(data: Delivery[], filename: string) {
-  if (data.length === 0) {
-    alert("Não há dados para exportar.");
+  const pendingDeliveries = data.filter(d => d.status === 'PENDENTE');
+
+  if (pendingDeliveries.length === 0) {
+    alert("Não há encomendas pendentes para exportar.");
     return;
   }
 
-  const headers = [
-    'ID', 'Morador', 'Apartamento', 'Bloco', 'Descrição', 'Status', 
-    'Data de Criação', 'Data de Entrega', 'Retirado Por'
-  ];
-  const rows = data.map(d => [
-    d.id,
-    `"${d.residentName.replace(/"/g, '""')}"`,
-    d.apartment,
-    d.block,
-    `"${d.description.replace(/"/g, '""')}"`,
-    d.status,
-    d.createdAt ? new Date(d.createdAt).toISOString() : '',
-    d.deliveredAt ? new Date(d.deliveredAt).toISOString() : '',
-    d.retiradoPor ? `"${d.retiradoPor.replace(/"/g, '""')}"` : ''
-  ]);
+  const deliveriesByBlock: { [key: string]: string[] } = {
+    '1': [],
+    '2': [],
+    '3': [],
+  };
+
+  pendingDeliveries.forEach(d => {
+    if (deliveriesByBlock[d.block]) {
+      deliveriesByBlock[d.block].push(d.apartment);
+    }
+  });
+
+  // Sort apartments numerically
+  Object.keys(deliveriesByBlock).forEach(block => {
+    deliveriesByBlock[block].sort((a, b) => Number(a) - Number(b));
+  });
+
+  const maxRows = Math.max(
+    deliveriesByBlock['1'].length,
+    deliveriesByBlock['2'].length,
+    deliveriesByBlock['3'].length
+  );
+
+  const headers = ['Bloco 1', 'Bloco 2', 'Bloco 3'];
+  const rows: string[][] = [];
+
+  for (let i = 0; i < maxRows; i++) {
+    rows.push([
+      deliveriesByBlock['1'][i] || '',
+      deliveriesByBlock['2'][i] || '',
+      deliveriesByBlock['3'][i] || '',
+    ]);
+  }
 
   const csvRows = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
   const csvContent = "data:text/csv;charset=utf-8," + csvRows;
